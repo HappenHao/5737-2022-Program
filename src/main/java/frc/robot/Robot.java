@@ -21,6 +21,7 @@ import com.revrobotics.ColorMatchResult;
 import com.revrobotics.ColorSensorV3;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+import com.revrobotics.CANSparkMax.IdleMode;
 
 import java.lang.Math;
 
@@ -31,6 +32,7 @@ import edu.wpi.first.wpilibj.Joystick;
 
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.Pneumatic;
@@ -67,21 +69,25 @@ public class Robot extends TimedRobot {
   Boolean taskf = false;
   String team = "empty";
   Pneumatic m_pneumatic = new Pneumatic();
-  XboxController xbox;
-  CANSparkMax motor_pitch;
-  CANSparkMax motor_spin;
-  RelativeEncoder encoder_pitch;
-  RelativeEncoder encoder_spin;
-  RelativeEncoder encoder_leftdrive;
-  RelativeEncoder encoder_rightdrive;
-  CANSparkMax motor_transmit_3;
-  CANSparkMax ball_collector;
-  CANSparkMax ball_transmitor_1;
-  CANSparkMax ball_transmitor_2;
-  CANSparkMax drive_left_1;
-  CANSparkMax drive_left_2;
-  CANSparkMax drive_right_1;
-  CANSparkMax drive_right_2;
+  XboxController xbox = new XboxController(0);
+  CANSparkMax motor_pitch = new CANSparkMax(16,MotorType.kBrushless);
+  CANSparkMax motor_spin = new CANSparkMax(15,MotorType.kBrushless);
+  RelativeEncoder encoder_pitch = motor_pitch.getEncoder();
+  RelativeEncoder encoder_spin =motor_spin.getEncoder();
+  CANSparkMax motor_transmit_3= new CANSparkMax(14,MotorType.kBrushless);
+  CANSparkMax ball_collector= new CANSparkMax(11,MotorType.kBrushless);
+  CANSparkMax ball_transmitor_1 = new CANSparkMax(12,MotorType.kBrushed);
+  CANSparkMax ball_transmitor_2= new CANSparkMax(13,MotorType.kBrushed);
+  CANSparkMax drive_left_1= new CANSparkMax(33,MotorType.kBrushless);
+  CANSparkMax drive_left_2 = new CANSparkMax(34,MotorType.kBrushless);
+  CANSparkMax drive_right_1=new CANSparkMax(32,MotorType.kBrushless);
+  CANSparkMax drive_right_2= new CANSparkMax(31,MotorType.kBrushless);
+  
+  RelativeEncoder encoder_leftdrive= drive_left_1.getEncoder();
+  RelativeEncoder encoder_rightdrive= drive_right_1.getEncoder();
+
+  DifferentialDrive m_driver = new DifferentialDrive(drive_left_1, drive_right_2);
+
   DigitalInput limitsw = new DigitalInput(1);
   DigitalInput limitsw2 = new DigitalInput(2);
   DigitalInput ball_detector = new DigitalInput(0);
@@ -174,19 +180,21 @@ public class Robot extends TimedRobot {
     
     public double spin_check(double dir_input, double current){
       double spin = 0;
-      if(current<=-145){
+      if(current<=-40){//-145
         if(dir_input<0){
           spin = 0;
         }else{
           spin = dir_input;
         }
-      }else if(current>=-10){
+      }
+      else if(current>= 30){//-10
         if(dir_input>0){
           spin = 0;
         }else{
           spin = dir_input;
         }
-      }else{
+      }
+      else{
         spin = dir_input;
       }
       return spin; 
@@ -245,7 +253,7 @@ public class Robot extends TimedRobot {
       
       distance = PhotonUtils.calculateDistanceToTargetMeters(camera_height_m, target_height_m, install_camera_pitch_r, degree*Math.PI/180)+dis_error;
     
-      SmartDashboard.putNumber("d", distance);
+      SmartDashboard.putNumber("TargetDistance", distance);
       return distance;
     }
 
@@ -385,7 +393,7 @@ public class Robot extends TimedRobot {
         setvelo = targetvelo;
       }
     
-      SmartDashboard.putNumber("setvelo", setvelo);
+      SmartDashboard.putNumber("TargetShooterSpeed", setvelo);
       return setvelo;
     }
 
@@ -436,7 +444,7 @@ public class Robot extends TimedRobot {
 		  converted_speed = current_velocity/2048*10*1.5*10.16*Math.PI/100;
 		  //SmartDashboard.putNumber("targetVelocity_Units",-targetVelocity_UnitsPer100ms);
 		  //SmartDashboard.putNumber("wheel linear velocity m/s",converted_speed);
-		  SmartDashboard.putNumber("actual unit per 100ms",current_velocity);
+		  SmartDashboard.putNumber("CurrentShooterSpeedUP100ms",current_velocity);
 	
 		  pre_targetvelocity_Unitsper100ms = targetVelocity_UnitsPer100ms;
   
@@ -469,7 +477,7 @@ public class Robot extends TimedRobot {
         error_spin = result.getBestTarget().getYaw();
         cam_pitch_degree = result.getBestTarget().getPitch();
 
-        SmartDashboard.putNumber("ang", cam_pitch_degree);
+        SmartDashboard.putNumber("TargetPitchDegree", cam_pitch_degree);
      
     
         Integral_spin = (Integral_spin + error_spin);
@@ -489,10 +497,12 @@ public class Robot extends TimedRobot {
           motor_pitch.set(setang(0.01, 0.000015, 0, degtoenc(tarpitch)-encoder_pitch.getPosition()));
         }
       
-        SmartDashboard.putNumber("ang", encoder_pitch.getPosition());
+        // SmartDashboard.putNumber("PitchAngle_Unit", encoder_pitch.getPosition());
+        SmartDashboard.putNumber("PitchDeg", spinenctodeg(encoder_pitch.getPosition()));
 
 
-        SmartDashboard.putNumber("tarpi",tarpitch);
+
+        SmartDashboard.putNumber("SetPitchAngle",tarpitch);
         double vertedcon_velo = cal_velo(distance, target_height_m, camera_height_m)*100/Math.PI/10.16/1.5/10*2048;
    
     
@@ -546,33 +556,43 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotInit() {
-    xbox = new XboxController(0);
-    motor_pitch = new CANSparkMax(16,MotorType.kBrushless);
-    encoder_pitch = motor_pitch.getEncoder();
-    motor_spin = new CANSparkMax(15,MotorType.kBrushless);
-    encoder_spin =motor_spin.getEncoder();
-    motor_transmit_3 = new CANSparkMax(14,MotorType.kBrushless);
-    ball_collector = new CANSparkMax(11,MotorType.kBrushless);
-    ball_transmitor_1 = new CANSparkMax(12,MotorType.kBrushed);
-    ball_transmitor_2 = new CANSparkMax(13,MotorType.kBrushed);
-    drive_left_1 = new CANSparkMax(33,MotorType.kBrushless);
-    drive_left_2 = new CANSparkMax(34,MotorType.kBrushless);
-    drive_right_1 = new CANSparkMax(31,MotorType.kBrushless);
-    drive_right_2 =new CANSparkMax(32,MotorType.kBrushless);
-    encoder_leftdrive = drive_left_1.getEncoder();
-    encoder_rightdrive = drive_right_2.getEncoder();
+    // xbox = new XboxController(0);
+    // motor_pitch = new CANSparkMax(16,MotorType.kBrushless);
+    // encoder_pitch = motor_pitch.getEncoder();
+    // motor_spin = new CANSparkMax(15,MotorType.kBrushless);
+    // encoder_spin =motor_spin.getEncoder();
+    // motor_transmit_3 = new CANSparkMax(14,MotorType.kBrushless);
+    // ball_collector = new CANSparkMax(11,MotorType.kBrushless);
+    // ball_transmitor_1 = new CANSparkMax(12,MotorType.kBrushed);
+    // ball_transmitor_2 = new CANSparkMax(13,MotorType.kBrushed);
+    // drive_left_1 = new CANSparkMax(33,MotorType.kBrushless);
+    // drive_left_2 = new CANSparkMax(34,MotorType.kBrushless);
+    // drive_right_2 = new CANSparkMax(31,MotorType.kBrushless);
+    // drive_right_1 =new CANSparkMax(32,MotorType.kBrushless);
+    // encoder_leftdrive = drive_left_1.getEncoder();
+    // encoder_rightdrive = drive_right_1.getEncoder();
     motor_pitch.setInverted(true);
     ball_collector.setInverted(true);
+    // ball_transmitor_1.setInverted(true);
+    // ball_transmitor_2.setInverted(true);
+
+    drive_left_1.setInverted(true);
+    drive_left_1.setIdleMode(IdleMode.kBrake);
+    drive_left_2.setIdleMode(IdleMode.kBrake);
+    drive_right_1.setIdleMode(IdleMode.kBrake);
+    drive_right_2.setIdleMode(IdleMode.kBrake);
+
+
     drive_left_2.follow(drive_left_1);
     drive_right_1.follow(drive_right_2);
 
-    
+
    
 
-    drive_left_1.restoreFactoryDefaults();
-    drive_left_2.restoreFactoryDefaults();
-    drive_right_1.restoreFactoryDefaults();
-    drive_right_2.restoreFactoryDefaults();
+    // drive_left_1.restoreFactoryDefaults();
+    // drive_left_2.restoreFactoryDefaults();
+    // drive_right_1.restoreFactoryDefaults();
+    // drive_right_2.restoreFactoryDefaults();
 
     
     /* Factory Default all hardware to prevent unexpected behaviour */
@@ -710,7 +730,7 @@ public class Robot extends TimedRobot {
     
     
     ball_transmitor_1.set(-0.7);
-    SmartDashboard.putNumber("dir", -gyro.getYaw());
+    SmartDashboard.putNumber("AUTO_DriverDircation", -gyro.getYaw());
     encoder_leftdrive.setPosition(0);
     encoder_rightdrive.setPosition(0);
 
@@ -720,11 +740,11 @@ public class Robot extends TimedRobot {
     
 
     while(true){
-      SmartDashboard.putNumber("dir", -gyro.getYaw());
+      SmartDashboard.putNumber("AUTO_DriverDircation", -gyro.getYaw());
       double drive_current_drivestraight = encoder_leftdrive.getPosition();
       go_straight(1.2, drive_current_drivestraight);
-      SmartDashboard.putNumber("leftwheel", encoder_leftdrive.getPosition());
-      SmartDashboard.putNumber("rightwheel", encoder_rightdrive.getPosition());
+      SmartDashboard.putNumber("AUTO_leftwheel", encoder_leftdrive.getPosition());
+      SmartDashboard.putNumber("AUTO_rightwheel", encoder_rightdrive.getPosition());
 
       auto_shoot();
 
@@ -760,9 +780,9 @@ public class Robot extends TimedRobot {
     gyro.setYaw(0);
     while(true){
       double drive_current_angle = -gyro.getYaw();
-      SmartDashboard.putNumber("leftwheel", encoder_leftdrive.getPosition());
-      SmartDashboard.putNumber("rightwheel", encoder_rightdrive.getPosition());
-      SmartDashboard.putNumber("dir", -gyro.getYaw());
+      SmartDashboard.putNumber("AUTO_leftwheel", encoder_leftdrive.getPosition());
+      SmartDashboard.putNumber("AUTO_rightwheel", encoder_rightdrive.getPosition());
+      SmartDashboard.putNumber("AUTO_drication", -gyro.getYaw());
       drive_left_1.set(auto_turn(drive_current_angle, 110));
       drive_right_2.set(auto_turn(drive_current_angle, 110));
       
@@ -912,21 +932,24 @@ public class Robot extends TimedRobot {
 
     SmartDashboard.putNumber("xspeed", get_x_speed(spinenctodeg(encoder_spin.getPosition()), get_drive_speed()));
     SmartDashboard.putNumber("yspeed", get_y_speed(spinenctodeg(encoder_spin.getPosition()), get_drive_speed()));
-    //SmartDashboard.putNumber("spd", spinenctodeg(encoder_spin.getPosition()));
+    SmartDashboard.putNumber("LeftMotor1Temp", drive_left_1.getMotorTemperature());
+    SmartDashboard.putNumber("LeftMotor2Temp", drive_left_2.getMotorTemperature());
+    SmartDashboard.putNumber("SpinDeg", spinenctodeg(encoder_spin.getPosition()));
     
     
     double straight_velo = xbox.getRawAxis(1)*0.8;
     double turn_velo = -xbox.getRawAxis(4)*0.8;
-    
-    drive_right_2.set(straight_velo-turn_velo);
-    drive_left_1.set(-straight_velo-turn_velo);
+    m_driver.arcadeDrive(straight_velo, turn_velo);
+
+    // drive_right_2.set(straight_velo-turn_velo);
+    // drive_left_1.set(-straight_velo-turn_velo);
     
     /*
     drive_right_2.set(xbox.getRawAxis(5));
     drive_left_1.set(-xbox.getRawAxis(1));
     */
     motor_spin.set(spin_check(spin_input, encoder_spin.getPosition()));
-    SmartDashboard.putNumber("spcheck", spin_check(spin_input, encoder_spin.getPosition()));
+    SmartDashboard.putNumber("SpinTurned", spin_check(spin_input, encoder_spin.getPosition()));
     SmartDashboard.putNumber("rorrspin", error_spin);
     
     if(xbox.getRawButton(2)){
@@ -946,11 +969,11 @@ public class Robot extends TimedRobot {
     
     
     if(_joy.getRawButton(1)){
-      ball_transmitor_2.set(-0.3);
+      ball_transmitor_2.set(0.3);
       motor_transmit_3.set(-0.75);
       
     }else{
-      ball_transmitor_2.set(-0);
+      ball_transmitor_2.set(0);
       motor_transmit_3.set(-0);
       
     }
@@ -966,7 +989,7 @@ public class Robot extends TimedRobot {
 
     if(xbox.getRawAxis(3)>=0.1){ 
       ball_collector.set(xbox.getRawAxis(3));
-      SmartDashboard.putNumber("collector", xbox.getRawAxis(3));
+      SmartDashboard.putNumber("collectorMotorPower", xbox.getRawAxis(3));
     }else if(xbox.getRawAxis(2)>=0.1){
       ball_collector.set(-xbox.getRawAxis(2));
     }else{
@@ -989,12 +1012,12 @@ public class Robot extends TimedRobot {
     
 
     if(xbox.getRawAxis(3)>=0.1){
-      ball_transmitor_1.set(-0.8);
+      ball_transmitor_1.set(0.8);
       m_pneumatic.intakeDown();
     }else if(_joy.getRawButton(1)){
-      ball_transmitor_1.set(-0.8);
-    }else if(xbox.getRawAxis(2)>=0.1){
       ball_transmitor_1.set(0.8);
+    }else if(xbox.getRawAxis(2)>=0.1){
+      ball_transmitor_1.set(-0.8);
     }else{
       ball_transmitor_1.set(0);
     }

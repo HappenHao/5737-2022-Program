@@ -546,9 +546,6 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotInit() {
-    
-    
-
     xbox = new XboxController(0);
     motor_pitch = new CANSparkMax(16,MotorType.kBrushless);
     encoder_pitch = motor_pitch.getEncoder();

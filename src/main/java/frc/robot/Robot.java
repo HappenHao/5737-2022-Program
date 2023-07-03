@@ -82,9 +82,9 @@ public class Robot extends TimedRobot {
   CANSparkMax drive_left_2;
   CANSparkMax drive_right_1;
   CANSparkMax drive_right_2;
-  DigitalInput limitsw = new DigitalInput(0);
+  DigitalInput limitsw = new DigitalInput(1);
   DigitalInput limitsw2 = new DigitalInput(2);
-  DigitalInput ball_detector = new DigitalInput(1);
+  DigitalInput ball_detector = new DigitalInput(0);
 
   String ball_1 = "empty";
   String ball_2 = "empty";
@@ -106,7 +106,7 @@ public class Robot extends TimedRobot {
   double tarpitch = 0;
   double joypitch = 0;
   TalonFX _talon = new TalonFX(24);
-  PhotonCamera frontcam = new PhotonCamera("cam");
+  PhotonCamera frontcam = new PhotonCamera("ShooterCam");
   
   double camera_height_m = 0.685;
   double target_height_m = 2.67;
@@ -121,7 +121,7 @@ public class Robot extends TimedRobot {
   double dis_error = 0.45;
   double spin_initiate_degree = -6;
 
-  Pigeon2 gyro = new Pigeon2(30);
+  Pigeon2 gyro = new Pigeon2(3);
 
   double p_e = 0;
 

@@ -32,12 +32,9 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
-<<<<<<< HEAD
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-=======
 // import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 // import edu.wpi.first.wpilibj2.command.CommandScheduler;
->>>>>>> b9b3c923013aae7253ec5157c726e3c267e591c4
 import frc.robot.subsystems.Pneumatic;
 /*
 import edu.wpi.first.networktables.NetworkTable;

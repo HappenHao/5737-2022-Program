@@ -9,7 +9,6 @@ package frc.robot;
 
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.sensors.Pigeon2;
-import com.ctre.phoenix.sensors.WPI_PigeonIMU;
 import com.ctre.phoenix.motorcontrol.TalonFXControlMode;
 import com.ctre.phoenix.motorcontrol.TalonFXFeedbackDevice;
 
@@ -34,7 +33,6 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.Pneumatic;
 /*
 import edu.wpi.first.networktables.NetworkTable;
@@ -47,9 +45,7 @@ import edu.wpi.first.wpilibj.util.Color;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonUtils;
 
-import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
 
 
@@ -97,10 +93,6 @@ public class Robot extends TimedRobot {
 
   I2C.Port i2cPort = I2C.Port.kOnboard;
   ColorSensorV3 m_colorsensor = new ColorSensorV3(i2cPort);
-  
-
-  
-  
 
   double pitch = 0;
   double enc_rever = 0;
@@ -140,9 +132,6 @@ public class Robot extends TimedRobot {
  */
   double spin_input = 0;
 
-  
-
-	
 	TalonFX _talon2 = new TalonFX(25);
   Joystick _joy = new Joystick(1);
 
@@ -667,14 +656,8 @@ public class Robot extends TimedRobot {
   public void disabledPeriodic() {
   }
 
-  /**
-   * This autonomous runs the autonomous command selected by your {@link RobotContainer} class.
-   */
   @Override
   public void autonomousInit() {
-    
-
-    // schedule the autonomous command (example)
     if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();
     }

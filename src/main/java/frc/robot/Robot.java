@@ -9,15 +9,15 @@ package frc.robot;
 
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.sensors.Pigeon2;
-import com.ctre.phoenix.sensors.WPI_PigeonIMU;
+// import com.ctre.phoenix.sensors.WPI_PigeonIMU;
 import com.ctre.phoenix.motorcontrol.TalonFXControlMode;
 import com.ctre.phoenix.motorcontrol.TalonFXFeedbackDevice;
 
 import com.ctre.phoenix.motorcontrol.TalonFXInvertType;
 
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.ColorMatch;
-import com.revrobotics.ColorMatchResult;
+// import com.revrobotics.ColorMatch;
+// import com.revrobotics.ColorMatchResult;
 import com.revrobotics.ColorSensorV3;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
@@ -33,8 +33,8 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
+// import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+// import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.Pneumatic;
 /*
 import edu.wpi.first.networktables.NetworkTable;
@@ -43,13 +43,15 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 */
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
+import edu.wpi.first.wpilibj2.command.Command;
 
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonUtils;
 
-import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
+
+// import edu.wpi.first.wpilibj.TimedRobot;
+// import edu.wpi.first.wpilibj2.command.Command;
+// import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
 
 
@@ -60,11 +62,8 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
  * project.
  */
 public class Robot extends TimedRobot {
+  private static final double Inv = -1;
   private Command m_autonomousCommand;
-
-  
-
-  
   double error_spin_get = 0;
   Boolean taskf = false;
   String team = "empty";
@@ -97,9 +96,6 @@ public class Robot extends TimedRobot {
 
   I2C.Port i2cPort = I2C.Port.kOnboard;
   ColorSensorV3 m_colorsensor = new ColorSensorV3(i2cPort);
-  
-
-  
   
 
   double pitch = 0;
@@ -180,7 +176,7 @@ public class Robot extends TimedRobot {
     
     public double spin_check(double dir_input, double current){
       double spin = 0;
-      if(current<=-40){//-145
+      if(current<=-50){//-145
         if(dir_input<0){
           spin = 0;
         }else{
@@ -729,7 +725,7 @@ public class Robot extends TimedRobot {
     ball_collector.set(0.5);
     
     
-    ball_transmitor_1.set(-0.7);
+    ball_transmitor_1.set(-0.7*Inv);
     SmartDashboard.putNumber("AUTO_DriverDircation", -gyro.getYaw());
     encoder_leftdrive.setPosition(0);
     encoder_rightdrive.setPosition(0);
@@ -879,7 +875,7 @@ public class Robot extends TimedRobot {
         break;
       }else{
         motor_pitch.set(0.25);
-        
+        break;
       }
     }
     encoder_pitch.setPosition(0);
@@ -890,6 +886,7 @@ public class Robot extends TimedRobot {
         break;
       }else{
         motor_spin.set(0.25);
+        break;
       }
     }
     encoder_spin.setPosition(0);
@@ -905,6 +902,12 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
+    if (limitsw.get()){
+      encoder_pitch.setPosition(0);
+    }
+    if(!limitsw2.get()){
+      encoder_spin.setPosition(0);
+    }
     if(_joy.getRawAxis(3)<0){
       team = "blue";
       SmartDashboard.putBoolean("teamset", true);
@@ -949,6 +952,7 @@ public class Robot extends TimedRobot {
     drive_left_1.set(-xbox.getRawAxis(1));
     */
     motor_spin.set(spin_check(spin_input, encoder_spin.getPosition()));
+    System.out.println(encoder_spin.getPosition());
     SmartDashboard.putNumber("SpinTurned", spin_check(spin_input, encoder_spin.getPosition()));
     SmartDashboard.putNumber("rorrspin", error_spin);
     
@@ -1012,12 +1016,12 @@ public class Robot extends TimedRobot {
     
 
     if(xbox.getRawAxis(3)>=0.1){
-      ball_transmitor_1.set(0.8);
+      ball_transmitor_1.set(-0.8*Inv);
       m_pneumatic.intakeDown();
     }else if(_joy.getRawButton(1)){
-      ball_transmitor_1.set(0.8);
+      ball_transmitor_1.set(-0.8*Inv);
     }else if(xbox.getRawAxis(2)>=0.1){
-      ball_transmitor_1.set(-0.8);
+      ball_transmitor_1.set(0.8*Inv);
     }else{
       ball_transmitor_1.set(0);
     }
